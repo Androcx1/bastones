@@ -22,7 +22,6 @@ const Login = () => {
             const response = await axios.post("http://localhost:5000/google-login", {
                 nombre: user.displayName,
                 correo: user.email,
-                token: await user.getIdToken(),
             });
 
             localStorage.setItem("userSession", JSON.stringify(response.data));

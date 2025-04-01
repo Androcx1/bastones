@@ -136,64 +136,44 @@ app.post('/login', (req, res) => {
     });
 });
 
-// **🟢 Inicio de Sesión con Google (Firebase)**
 app.post('/google-login', async (req, res) => {
-    const { token } = req.body; // Recibe el token de Firebase desde el frontend
-
-    if (!token) {
-        return res.status(400).json({ error: "Token de autenticación requerido" });
+    const { nombre, correo } = req.body;
+  
+    if (!correo || !nombre) {
+      return res.status(400).json({ error: "Nombre y correo requeridos" });
     }
-
-    try {
-        // 🔥 Verificar el token de Google en Firebase
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        console.log("✅ Token decodificado:", decodedToken);
-
-        const { name, email } = decodedToken;
-
-        if (!email) {
-            return res.status(400).json({ error: "No se pudo obtener el correo del usuario." });
-        }
-
-        db.query('SELECT * FROM usuarios WHERE correo = ?', [email], (err, results) => {
-            if (err) {
-                console.error("🚨 Error en MySQL (SELECT):", err);
-                return res.status(500).json({ error: 'Error en la base de datos' });
-            }
-
-            if (results.length > 0) {
-                console.log("✅ Usuario ya registrado:", results[0]);
-                return res.json(results[0]); // Si ya existe, retorna los datos del usuario
-            } else {
-                // Registrar usuario con Google
-                const sql = 'INSERT INTO usuarios (nombre, correo, tipo_usuario) VALUES (?, ?, ?)';
-                db.query(sql, [name, email, 'Cliente'], (err, result) => {
-                    if (err) {
-                        console.error("🚨 Error al registrar usuario con Google:", err);
-                        return res.status(500).json({ error: 'Error al registrar usuario' });
-                    }
-
-                    console.log("✅ Nuevo usuario registrado con Google:", {
-                        id_usuario: result.insertId,
-                        nombre: name,
-                        correo: email,
-                        tipo_usuario: 'Cliente',
-                    });
-
-                    return res.json({
-                        id_usuario: result.insertId,
-                        nombre: name,
-                        correo: email,
-                        tipo_usuario: 'Cliente',
-                    });
-                });
-            }
+  
+    db.query('SELECT * FROM usuarios WHERE correo = ?', [correo], (err, results) => {
+      if (err) {
+        console.error("🚨 Error en MySQL (SELECT):", err);
+        return res.status(500).json({ error: 'Error en la base de datos' });
+      }
+  
+      if (results.length > 0) {
+        console.log("✅ Usuario ya registrado:", results[0]);
+        return res.json(results[0]);
+      } else {
+        const sql = 'INSERT INTO usuarios (nombre, correo, tipo_usuario) VALUES (?, ?, ?)';
+        db.query(sql, [nombre, correo, 'Cliente'], (err, result) => {
+          if (err) {
+            console.error("🚨 Error al registrar usuario:", err);
+            return res.status(500).json({ error: 'Error al registrar usuario' });
+          }
+  
+          const nuevoUsuario = {
+            id_usuario: result.insertId,
+            nombre,
+            correo,
+            tipo_usuario: 'Cliente',
+          };
+  
+          console.log("✅ Usuario nuevo creado:", nuevoUsuario);
+          return res.json(nuevoUsuario);
         });
-    } catch (error) {
-        console.error("🚨 Error en la autenticación con Google:", error);
-        return res.status(500).json({ error: "Error al autenticar con Google", details: error.message });
-    }
+      }
+    });
 });
+  
 
 // **🟢 Endpoint para registrar una venta**
 app.post("/registrar-venta", async (req, res) => {
