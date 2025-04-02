@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { collection, getDocs } from "firebase/firestore"; // 👈 Firestore
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ReporteFirebase = () => {
   const [dispositivos, setDispositivos] = useState([]);
@@ -12,26 +12,14 @@ const ReporteFirebase = () => {
   useEffect(() => {
     const fetchDispositivos = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "dispositivos"));
-        const lista = querySnapshot.docs.map((doc) => ({
+        const snapshot = await getDocs(collection(db, "dispositivos"));
+        const lista = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
-        // Filtrar campos deseados
-        const filtrados = lista.map((item) => ({
-          id: item.id,
-          modelo: item.modelo || "-",
-          nombre: item.nombre || "-",
-          obstaculos: item.obstaculos_detectados || "-",
-          oxigeno: item.oxigeno || "-",
-          pasos: item.pasos || "-",
-          temperatura: item.temperatura || "-",
-        }));
-
-        setDispositivos(filtrados);
-      } catch (err) {
-        console.error("❌ Error al obtener dispositivos:", err);
+        setDispositivos(lista);
+      } catch (error) {
+        console.error("❌ Error al obtener los datos:", error);
       }
     };
 
@@ -40,23 +28,24 @@ const ReporteFirebase = () => {
 
   const generarPDF = () => {
     const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text("Reporte de Dispositivos", 14, 20);
+    doc.text("📋 Reporte de Dispositivos", 14, 20);
 
     const rows = dispositivos.map((item) => [
       item.id,
-      item.modelo,
-      item.nombre,
-      item.obstaculos,
-      item.oxigeno,
-      item.pasos,
-      item.temperatura,
+      item.nombre || "-",
+      item.modelo || "-",
+      item.obstaculos_detectados || "-",
+      item.oxigeno || "-",
+      item.pasos || "-",
+      item.temperatura || "-",
     ]);
 
     autoTable(doc, {
-      head: [["ID", "Modelo", "Nombre", "Obstáculos", "Oxígeno", "Pasos", "Temperatura"]],
+      head: [["ID", "Nombre", "Modelo", "Obstáculos", "Oxígeno", "Pasos", "Temperatura"]],
       body: rows,
       startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [0, 123, 255] },
     });
 
     doc.save("Reporte_Dispositivos.pdf");
@@ -64,11 +53,13 @@ const ReporteFirebase = () => {
 
   return (
     <div style={styles.container}>
+      {/* 🔹 Logo clickeable */}
       <div style={styles.logoContainer} onClick={() => navigate("/home")}>
         <img src="/images/logob.jpg" alt="Logo" style={styles.logo} />
       </div>
 
       <h2 style={styles.title}>📟 Reporte de Dispositivos</h2>
+
       <button style={styles.button} onClick={generarPDF}>
         📥 Descargar PDF
       </button>
@@ -77,8 +68,8 @@ const ReporteFirebase = () => {
         <thead style={styles.tableHead}>
           <tr>
             <th>ID</th>
-            <th>Modelo</th>
             <th>Nombre</th>
+            <th>Modelo</th>
             <th>Obstáculos</th>
             <th>Oxígeno</th>
             <th>Pasos</th>
@@ -86,12 +77,12 @@ const ReporteFirebase = () => {
           </tr>
         </thead>
         <tbody>
-          {dispositivos.map((item, idx) => (
-            <tr key={idx}>
+          {dispositivos.map((item, index) => (
+            <tr key={index}>
               <td>{item.id}</td>
-              <td>{item.modelo}</td>
               <td>{item.nombre}</td>
-              <td>{item.obstaculos}</td>
+              <td>{item.modelo}</td>
+              <td>{item.obstaculos_detectados}</td>
               <td>{item.oxigeno}</td>
               <td>{item.pasos}</td>
               <td>{item.temperatura}</td>
@@ -139,6 +130,8 @@ const styles = {
     cursor: "pointer",
     fontSize: "16px",
     marginBottom: "20px",
+    display: "block",
+    margin: "0 auto 30px",
   },
   table: {
     width: "100%",
