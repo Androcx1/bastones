@@ -1,81 +1,56 @@
-// ReporteFirebase.js
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { ref, onValue } from "firebase/database";
+import { ref, get } from "firebase/database";
 import { db } from "./firebase";
 import { useNavigate } from "react-router-dom";
 
 const ReporteFirebase = () => {
-  const [datos, setDatos] = useState([]);
+  const [dispositivos, setDispositivos] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const raizRef = ref(db, "bastonCEOXS");
+    const dispositivosRef = ref(db, "dispositivos");
 
-    onValue(raizRef, (snapshot) => {
-      const data = snapshot.val();
-      const result = [];
-
-      if (data) {
-        Object.entries(data).forEach(([dispositivoId, dispositivoData]) => {
-          const id_usuario = dispositivoData.id_usuario || "Desconocido";
-          const id_dispositivo = dispositivoData.id_dispositivo || dispositivoId;
-
-          if (dispositivoData.Registros_Sensores) {
-            Object.entries(dispositivoData.Registros_Sensores).forEach(
-              ([registroId, registroData]) => {
-                result.push({
-                  usuario: id_usuario,
-                  dispositivo: id_dispositivo,
-                  ...registroData,
-                });
-              }
-            );
-          }
-        });
+    get(dispositivosRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const lista = Object.entries(data).map(([id, info]) => ({
+          id,
+          modelo: info.modelo || "-",
+          nombre: info.nombre || "-",
+          obstaculos: info.obstaculos_detectados || "-",
+          oxigeno: info.oxigeno || "-",
+          pasos: info.pasos || "-",
+          temperatura: info.temperatura || "-",
+        }));
+        setDispositivos(lista);
       }
-
-      setDatos(result);
     });
   }, []);
 
   const generarPDF = () => {
     const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Reporte de Registros de Sensores", 14, 20);
+    doc.setFontSize(16);
+    doc.text("Reporte de Dispositivos", 14, 20);
 
-    const rows = datos.map((item) => [
-      item.usuario || "-",
-      item.dispositivo || "-",
-      item.fecha_registro || "-",
-      item.frecuencia_cardiaca || "-",
-      item.oxigeno || "-",
-      item.temperatura || "-",
-      item.pasos || "-",
-      item.obstaculo_detectado || "-",
+    const rows = dispositivos.map((item) => [
+      item.id,
+      item.modelo,
+      item.nombre,
+      item.obstaculos,
+      item.oxigeno,
+      item.pasos,
+      item.temperatura,
     ]);
 
     autoTable(doc, {
-      head: [
-        [
-          "Usuario",
-          "Dispositivo",
-          "Fecha",
-          "Frecuencia Cardíaca",
-          "Oxigenación",
-          "Temperatura",
-          "Pasos",
-          "Obstáculos",
-        ],
-      ],
+      head: [["ID", "Modelo", "Nombre", "Obstáculos", "Oxígeno", "Pasos", "Temperatura"]],
       body: rows,
       startY: 30,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [0, 123, 255] },
     });
 
-    doc.save("Reporte_Sensores.pdf");
+    doc.save("Reporte_Dispositivos.pdf");
   };
 
   return (
@@ -84,7 +59,7 @@ const ReporteFirebase = () => {
         <img src="/images/logob.jpg" alt="Logo" style={styles.logo} />
       </div>
 
-      <h2 style={styles.title}>📊 Reporte de Registros del Bastón</h2>
+      <h2 style={styles.title}>📟 Reporte de Dispositivos</h2>
       <button style={styles.button} onClick={generarPDF}>
         📥 Descargar PDF
       </button>
@@ -92,27 +67,25 @@ const ReporteFirebase = () => {
       <table style={styles.table}>
         <thead style={styles.tableHead}>
           <tr>
-            <th>Usuario</th>
-            <th>Dispositivo</th>
-            <th>Fecha</th>
-            <th>Frecuencia</th>
-            <th>Oxigenación</th>
-            <th>Temperatura</th>
-            <th>Pasos</th>
+            <th>ID</th>
+            <th>Modelo</th>
+            <th>Nombre</th>
             <th>Obstáculos</th>
+            <th>Oxígeno</th>
+            <th>Pasos</th>
+            <th>Temperatura</th>
           </tr>
         </thead>
         <tbody>
-          {datos.map((item, index) => (
-            <tr key={index}>
-              <td>{item.usuario}</td>
-              <td>{item.dispositivo}</td>
-              <td>{item.fecha_registro}</td>
-              <td>{item.frecuencia_cardiaca || "-"}</td>
-              <td>{item.oxigeno || "-"}</td>
-              <td>{item.temperatura || "-"}</td>
-              <td>{item.pasos || "-"}</td>
-              <td>{item.obstaculo_detectado || "-"}</td>
+          {dispositivos.map((item, idx) => (
+            <tr key={idx}>
+              <td>{item.id}</td>
+              <td>{item.modelo}</td>
+              <td>{item.nombre}</td>
+              <td>{item.obstaculos}</td>
+              <td>{item.oxigeno}</td>
+              <td>{item.pasos}</td>
+              <td>{item.temperatura}</td>
             </tr>
           ))}
         </tbody>

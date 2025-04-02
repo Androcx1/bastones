@@ -1,18 +1,20 @@
 // src/firebase/firebase.js
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getDatabase } from "firebase/database";
+import { getFirestore } from "firebase/firestore"; // 👈 Cambiamos de Realtime a Firestore
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBVOXqVL1M5nGIhFefZ5ox4dYbbnNTegbw",
-  authDomain: "bastonceoxs.firebaseapp.com",
-  databaseURL: "https://bastonceoxs-default-rtdb.firebaseio.com",
-  projectId: "bastonceoxs",
-  storageBucket: "bastonceoxs.appspot.com", // ✅ CORREGIDO
-  messagingSenderId: "141437132215",
-  appId: "1:141437132215:web:2ec44916fa616503e89c32",
+  apiKey: "AIzaSyCX6UeqXw8rAyXUnMI_piNuaSSVMj9EGTU",
+  authDomain: "bastonesceoxs.firebaseapp.com",
+  projectId: "bastonesceoxs",
+  storageBucket: "bastonesceoxs.appspot.com",
+  messagingSenderId: "938831071340",
+  appId: "1:938831071340:web:0679e36326657e6de47049",
+  measurementId: "G-7TQ86DE3QW"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getDatabase(app);
+
+// 🟢 Inicializa Firestore
+const db = getFirestore(app);
 
 export { db };
