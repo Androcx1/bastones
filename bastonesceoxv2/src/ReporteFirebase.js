@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { ref, get } from "firebase/database";
+import { collection, getDocs } from "firebase/firestore"; // 👈 Firestore
 import { db } from "./firebase";
 import { useNavigate } from "react-router-dom";
 
@@ -10,23 +10,32 @@ const ReporteFirebase = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const dispositivosRef = ref(db, "dispositivos");
-
-    get(dispositivosRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const lista = Object.entries(data).map(([id, info]) => ({
-          id,
-          modelo: info.modelo || "-",
-          nombre: info.nombre || "-",
-          obstaculos: info.obstaculos_detectados || "-",
-          oxigeno: info.oxigeno || "-",
-          pasos: info.pasos || "-",
-          temperatura: info.temperatura || "-",
+    const fetchDispositivos = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "dispositivos"));
+        const lista = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
         }));
-        setDispositivos(lista);
+
+        // Filtrar campos deseados
+        const filtrados = lista.map((item) => ({
+          id: item.id,
+          modelo: item.modelo || "-",
+          nombre: item.nombre || "-",
+          obstaculos: item.obstaculos_detectados || "-",
+          oxigeno: item.oxigeno || "-",
+          pasos: item.pasos || "-",
+          temperatura: item.temperatura || "-",
+        }));
+
+        setDispositivos(filtrados);
+      } catch (err) {
+        console.error("❌ Error al obtener dispositivos:", err);
       }
-    });
+    };
+
+    fetchDispositivos();
   }, []);
 
   const generarPDF = () => {
