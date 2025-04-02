@@ -1,56 +1,56 @@
+// ReporteFirebase.js
 import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import { useNavigate } from "react-router-dom";
 
 const ReporteFirebase = () => {
-  const [dispositivos, setDispositivos] = useState([]);
+  const [datos, setDatos] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const obtenerDatos = async () => {
-      const snapshot = await getDocs(collection(db, "dispositivos"));
-      const lista = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setDispositivos(lista);
+    const fetchData = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "dispositivos"));
+        const dispositivos = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setDatos(dispositivos);
+      } catch (error) {
+        console.error("❌ Error al obtener datos:", error);
+      }
     };
 
-    obtenerDatos();
+    fetchData();
   }, []);
 
   return (
     <div style={styles.container}>
-      {/* 🔹 Logo clickeable */}
       <div style={styles.logoContainer} onClick={() => navigate("/home")}>
         <img src="/images/logob.jpg" alt="Logo" style={styles.logo} />
       </div>
 
-      <h2 style={styles.title}>📟 Reporte de Dispositivos</h2>
+      <h2 style={styles.title}>📡 Datos de Dispositivos</h2>
 
       <table style={styles.table}>
         <thead style={styles.tableHead}>
           <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Modelo</th>
-            <th>Pasos</th>
+            <th>Obstáculos</th>
             <th>Oxígeno</th>
             <th>Temperatura</th>
-            <th>Obstáculos</th>
           </tr>
         </thead>
         <tbody>
-          {dispositivos.map((item, index) => (
+          {datos.map((item, index) => (
             <tr key={index}>
               <td>{item.id}</td>
-              <td>{item.nombre || "-"}</td>
-              <td>{item.modelo || "-"}</td>
-              <td>{item.pasos || "-"}</td>
-              <td>{item.oxigeno || "-"}</td>
-              <td>{item.temperatura || "-"}</td>
-              <td>{item.obstaculos_detectados || "-"}</td>
+              <td>{item.nombre}</td>
+              <td>{item.Obstaculos}</td>
+              <td>{item.Oxigeno}</td>
+              <td>{item.temperatura}</td>
             </tr>
           ))}
         </tbody>
