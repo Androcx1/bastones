@@ -1,126 +1,102 @@
-import React, { useState, useEffect } from 'react';
-import { ref, onValue } from 'firebase/database';
-import { db } from './firebase'; // Asegúrate de que aquí se exporta "db"
+// Charts.js
+import React, { useEffect, useState } from "react";
+import { db } from "./firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 const Charts = () => {
-  const [selectedChart, setSelectedChart] = useState("salud");
-  const [datosSalud, setDatosSalud] = useState([]);
-  const [datosBaston, setDatosBaston] = useState([]);
+  const [datos, setDatos] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (selectedChart === "salud") {
-      const saludRef = ref(db, 'reportes/usuarioId123/salud');
-      onValue(saludRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const array = Object.values(data);
-          setDatosSalud(array);
-        }
-      });
-    } else {
-      const bastonRef = ref(db, 'reportes/usuarioId123/baston');
-      onValue(bastonRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const array = Object.values(data);
-          setDatosBaston(array);
-        }
-      });
-    }
-  }, [selectedChart]);
+    const obtenerDatos = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "dispositivos"));
+        const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setDatos(lista);
+      } catch (error) {
+        console.error("Error al obtener datos de Firestore:", error);
+      }
+    };
+
+    obtenerDatos();
+  }, []);
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>📊 Reportes desde Firebase</h1>
-
-      {/* Botones para cambiar entre reportes */}
-      <div style={styles.buttonContainer}>
-        <button
-          style={selectedChart === "salud" ? styles.activeButton : styles.button}
-          onClick={() => setSelectedChart("salud")}
-        >
-          Reporte de Salud
-        </button>
-        <button
-          style={selectedChart === "baston" ? styles.activeButton : styles.button}
-          onClick={() => setSelectedChart("baston")}
-        >
-          Reporte del Bastón
-        </button>
+      <div style={styles.logoContainer} onClick={() => navigate("/home")}> 
+        <img src="/images/logob.jpg" alt="Logo" style={styles.logo} />
       </div>
 
-      {/* Datos dinámicos */}
-      <div style={styles.dataContainer}>
-        {selectedChart === "salud" ? (
-          <>
-            <h3>📈 Datos de Salud</h3>
-            {datosSalud.map((item, index) => (
-              <p key={index}>Pasos: {item.pasos} | Ritmo cardíaco: {item.ritmo_cardiaco}</p>
-            ))}
-          </>
-        ) : (
-          <>
-            <h3>🦯 Datos del Bastón</h3>
-            {datosBaston.map((item, index) => (
-              <p key={index}>Batería: {item.bateria}% | Caídas: {item.caidas}</p>
-            ))}
-          </>
-        )}
-      </div>
+      <h2 style={styles.title}>📊 Vista de Datos de Firestore</h2>
+
+      <table style={styles.table}>
+        <thead style={styles.tableHead}>
+          <tr>
+            <th>ID</th>
+            <th>Modelo</th>
+            <th>Nombre</th>
+            <th>Obstáculos</th>
+            <th>Oxígeno</th>
+            <th>Pasos</th>
+            <th>Temperatura</th>
+          </tr>
+        </thead>
+        <tbody>
+          {datos.map((item, index) => (
+            <tr key={index}>
+              <td>{item.id}</td>
+              <td>{item.modelo || "-"}</td>
+              <td>{item.nombre || "-"}</td>
+              <td>{item.obstaculos_detectados || "-"}</td>
+              <td>{item.oxigeno || "-"}</td>
+              <td>{item.pasos || "-"}</td>
+              <td>{item.temperatura || "-"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-// 🎨 Estilos visuales
 const styles = {
   container: {
-    minHeight: '100vh',
-    backgroundColor: '#000',
-    backgroundImage: 'radial-gradient(circle, rgba(0,0,255,0.3) 10%, transparent 70%)',
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    color: '#fff',
-    padding: '40px 20px',
-    textAlign: 'center',
+    minHeight: "100vh",
+    backgroundColor: "#000",
+    backgroundImage: "radial-gradient(circle, rgba(0,0,255,0.3) 10%, transparent 70%)",
+    backgroundSize: "cover",
+    backgroundRepeat: "no-repeat",
+    color: "#fff",
+    padding: "100px 20px 40px",
+    fontFamily: "sans-serif",
+    position: "relative",
+  },
+  logoContainer: {
+    position: "absolute",
+    top: "15px",
+    left: "15px",
+    cursor: "pointer",
+  },
+  logo: {
+    width: "90px",
   },
   title: {
-    fontSize: '32px',
-    marginBottom: '30px',
+    fontSize: "28px",
+    fontWeight: "bold",
+    marginBottom: "20px",
+    textAlign: "center",
   },
-  buttonContainer: {
-    marginBottom: '20px',
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '15px',
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    backgroundColor: "#1e1e1e",
+    borderRadius: "10px",
+    overflow: "hidden",
   },
-  button: {
-    backgroundColor: '#444',
-    color: '#fff',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '16px',
-  },
-  activeButton: {
-    backgroundColor: '#007bff',
-    color: '#fff',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '16px',
-  },
-  dataContainer: {
-    marginTop: '30px',
-    backgroundColor: 'rgba(30, 30, 30, 0.9)',
-    borderRadius: '10px',
-    padding: '20px',
-    maxWidth: '800px',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    textAlign: 'left',
-    lineHeight: '1.6',
+  tableHead: {
+    backgroundColor: "#007bff",
+    color: "#fff",
   },
 };
 

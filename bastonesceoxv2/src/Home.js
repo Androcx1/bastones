@@ -57,7 +57,7 @@ const Home = () => {
         {/* 🔹 Iconos de Navegación */}
         <div style={styles.iconsContainer}>
         <FaHome style={styles.icon} onClick={refreshPage} />
-        <FaChartBar style={styles.icon} onClick={() => navigate('/reportes')} />
+        <FaChartBar style={styles.icon} onClick={() => navigate('/charts')} />
         <FaUserCircle style={styles.icon} onClick={goToProfile} />
         </div>
 
