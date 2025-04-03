@@ -1,7 +1,7 @@
 // ReporteFirebase.js
 import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { firestore } from "./firebase";
+import { db } from "./firebase"; // ✅ aquí ya está bien
 import { useNavigate } from "react-router-dom";
 
 const ReporteFirebase = () => {
@@ -11,7 +11,7 @@ const ReporteFirebase = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const snapshot = await getDocs(collection(firestore, "dispositivos"));
+        const snapshot = await getDocs(collection(db, "dispositivos")); // 👈 FIX
         const dispositivos = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -21,9 +21,10 @@ const ReporteFirebase = () => {
         console.error("❌ Error al obtener datos:", error);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
   return (
     <div style={styles.container}>
