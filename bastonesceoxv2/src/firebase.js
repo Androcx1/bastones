@@ -5,7 +5,7 @@ import { getDatabase } from "firebase/database";
 const firebaseConfig = {
   apiKey: "AIzaSyBASfSd6hALKmW4bGYetoAK0aJnkg-obrs",
   authDomain: "proyectoceox.firebaseapp.com",
-  databaseURL: "https://proyectoceox-default-rtdb.firebaseio.com/",
+  databaseURL: "https://proyectoceox-default-rtdb.firebaseio.com",
   projectId: "proyectoceox",
   storageBucket: "proyectoceox.appspot.com",
   messagingSenderId: "497016388925",
