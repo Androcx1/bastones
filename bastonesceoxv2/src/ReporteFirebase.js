@@ -1,7 +1,7 @@
 // ReporteFirebase.js
 import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "./firebase";
+import { firestore } from "./firebase";
 import { useNavigate } from "react-router-dom";
 
 const ReporteFirebase = () => {
@@ -11,7 +11,7 @@ const ReporteFirebase = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "dispositivos"));
+        const snapshot = await getDocs(collection(firestore, "dispositivos"));
         const dispositivos = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -31,7 +31,7 @@ const ReporteFirebase = () => {
         <img src="/images/logob.jpg" alt="Logo" style={styles.logo} />
       </div>
 
-      <h2 style={styles.title}>📡 Datos de Dispositivos</h2>
+      <h2 style={styles.title}>📋 Dispositivos registrados</h2>
 
       <table style={styles.table}>
         <thead style={styles.tableHead}>
@@ -47,10 +47,10 @@ const ReporteFirebase = () => {
           {datos.map((item, index) => (
             <tr key={index}>
               <td>{item.id}</td>
-              <td>{item.nombre}</td>
-              <td>{item.Obstaculos}</td>
-              <td>{item.Oxigeno}</td>
-              <td>{item.temperatura}</td>
+              <td>{item.nombre || "-"}</td>
+              <td>{item.Obstaculos || "-"}</td>
+              <td>{item.Oxigeno || "-"}</td>
+              <td>{item.temperatura || "-"}</td>
             </tr>
           ))}
         </tbody>
