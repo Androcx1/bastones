@@ -1,17 +1,18 @@
+// src/firebase.js
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getDatabase } from "firebase/database"; // 🔥 Importar Realtime Database
+import { getDatabase } from "firebase/database"; // 👈 Realtime Database
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBASfSd6hALKmW4bGYetoAK0aJnkg-obrs",
-  authDomain: "proyectoceox.firebaseapp.com",
-  databaseURL: "https://proyectoceox-default-rtdb.firebaseio.com/", // 🔥 Agregar esto
-  projectId: "proyectoceox",
-  storageBucket: "proyectoceox.appspot.com",
-  messagingSenderId: "497016388925",
-  appId: "1:497016388925:web:65d7d2c06400ad699c9954"
+  apiKey: "TU_API_KEY",
+  authDomain: "bastones-ceox-5463c.firebaseapp.com",
+  databaseURL: "https://bastones-ceox-5463c-default-rtdb.firebaseio.com", // ✅ ESTE LINK ES CLAVE
+  projectId: "bastones-ceox-5463c",
+  storageBucket: "bastones-ceox-5463c.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
 };
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getDatabase(app); // 🔥 Realtime Database
+const db = getDatabase(app); // 👈 Realtime DB aquí
 
 export { db };
