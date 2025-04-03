@@ -1,3 +1,4 @@
+// ReporteFirebase.js
 import React, { useEffect, useState } from "react";
 import { ref, get } from "firebase/database";
 import { db } from "./firebase";
@@ -9,15 +10,22 @@ const ReporteFirebase = () => {
 
   useEffect(() => {
     const fetchDispositivos = async () => {
-      const dispositivosRef = ref(db, "dispositivos");
-      const snapshot = await get(dispositivosRef);
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const lista = Object.entries(data).map(([id, valores]) => ({
-          id,
-          ...valores
-        }));
-        setDispositivos(lista);
+      try {
+        const dispositivosRef = ref(db, "/"); // Ruta raíz porque tus datos están directamente ahí
+        const snapshot = await get(dispositivosRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const lista = Object.entries(data).map(([id, valores]) => ({
+            id,
+            ...valores
+          }));
+          setDispositivos(lista);
+        } else {
+          console.warn("No hay datos disponibles.");
+        }
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
       }
     };
 
@@ -45,10 +53,10 @@ const ReporteFirebase = () => {
           {dispositivos.map((item) => (
             <tr key={item.id}>
               <td>{item.id}</td>
-              <td>{item.nombre}</td>
-              <td>{item.oxigeno}</td>
-              <td>{item.obstaculos}</td>
-              <td>{item.temperatura}</td>
+              <td>{item.nombre || "-"}</td>
+              <td>{item.oxigeno || "-"}</td>
+              <td>{item.obstaculos || "-"}</td>
+              <td>{item.temperatura || "-"}</td>
             </tr>
           ))}
         </tbody>
