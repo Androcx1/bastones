@@ -1,6 +1,6 @@
 // ReporteFirebase.js
 import React, { useEffect, useState } from "react";
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 
@@ -15,8 +15,11 @@ const firebaseConfig = {
   appId: "1:497016388925:web:65d7d2c06400ad699c9954"
 };
 
-// 🔌 Inicializar app y DB
-const app = initializeApp(firebaseConfig, "databaseApp");
+// ✅ Inicializar Firebase solo si no existe ya una app con ese nombre
+const app = getApps().find(a => a.name === "databaseApp") 
+  || initializeApp(firebaseConfig, "databaseApp");
+
+// ✅ Obtener la base de datos
 const db = getDatabase(app);
 
 const ReporteFirebase = () => {
@@ -26,15 +29,18 @@ const ReporteFirebase = () => {
   useEffect(() => {
     const fetchDispositivos = async () => {
       try {
-        const dispositivosRef = ref(db, "/"); // Ruta raíz
+        const dispositivosRef = ref(db, "/"); // Raíz de la base
         const snapshot = await get(dispositivosRef);
 
         if (snapshot.exists()) {
           const data = snapshot.val();
+
+          // Transformar objetos en array de dispositivos
           const lista = Object.entries(data).map(([id, valores]) => ({
             id,
             ...valores
           }));
+
           setDispositivos(lista);
         } else {
           console.warn("No hay datos disponibles.");
