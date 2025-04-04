@@ -16,7 +16,7 @@ const firebaseConfig = {
 };
 
 // 🔌 Inicializar app y DB
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig, "databaseApp");
 const db = getDatabase(app);
 
 const ReporteFirebase = () => {
