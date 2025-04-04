@@ -1,6 +1,6 @@
 // Charts.js
 import React, { useEffect, useState } from "react";
-import { db } from "./firebase";
+import { db } from "./ReporteFirebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
