@@ -12,23 +12,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// **🔥 Inicializa Firebase Admin**
-try {
-    const serviceAccountPath = './config/firebaseAdmin.json';
 
-    if (!fs.existsSync(serviceAccountPath)) {
-        throw new Error('El archivo firebaseAdmin.json no se encuentra en ./config/');
-    }
-
-    const serviceAccount = require(serviceAccountPath);
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
-
-    console.log('✅ Firebase Admin inicializado correctamente');
-} catch (error) {
-    console.error('❌ Error al inicializar Firebase Admin:', error.message);
-}
 
 // **🔹 Configuración de la base de datos MySQL**
 require('dotenv').config();
