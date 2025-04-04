@@ -9,7 +9,6 @@ import Register from './Register';
 // Componentes para cliente
 import Home from './Home';
 import Profile from './Profile';
-import Charts from './Charts';
 import Buy from './Buy';
 import ReportesFirebase from './ReporteFirebase'; // ✅ Nuevo
 
@@ -55,14 +54,6 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['Cliente']}>
                 <Buy />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/charts"
-            element={
-              <ProtectedRoute allowedRoles={['Cliente']}>
-                <Charts />
               </ProtectedRoute>
             }
           />
