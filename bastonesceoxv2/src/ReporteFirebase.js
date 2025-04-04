@@ -1,8 +1,23 @@
 // ReporteFirebase.js
 import React, { useEffect, useState } from "react";
-import { ref, get } from "firebase/database";
-import { db } from "./firebase";
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
+
+// 🔐 Configuración de Firebase Realtime Database
+const firebaseConfig = {
+  apiKey: "AIzaSyBASfSd6hALKmW4bGYetoAK0aJnkg-obrs",
+  authDomain: "proyectoceox.firebaseapp.com",
+  databaseURL: "https://proyectoceox-default-rtdb.firebaseio.com",
+  projectId: "proyectoceox",
+  storageBucket: "proyectoceox.appspot.com",
+  messagingSenderId: "497016388925",
+  appId: "1:497016388925:web:65d7d2c06400ad699c9954"
+};
+
+// 🔌 Inicializar app y DB
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 const ReporteFirebase = () => {
   const [dispositivos, setDispositivos] = useState([]);
@@ -11,7 +26,7 @@ const ReporteFirebase = () => {
   useEffect(() => {
     const fetchDispositivos = async () => {
       try {
-        const dispositivosRef = ref(db, "/"); // Ruta raíz porque tus datos están directamente ahí
+        const dispositivosRef = ref(db, "/"); // Ruta raíz
         const snapshot = await get(dispositivosRef);
 
         if (snapshot.exists()) {
