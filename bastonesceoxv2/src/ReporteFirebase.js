@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 // 🔐 Configuración de Firebase Realtime Database
 const firebaseConfig = {
@@ -57,11 +55,14 @@ const ReporteFirebase = () => {
     fetchDispositivos();
   }, []);
 
-  // ✅ Exportar a PDF
-  const exportarPDF = () => {
+  // ✅ Exportar a PDF (con importación dinámica para evitar errores en Vercel)
+  const exportarPDF = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+
     const doc = new jsPDF();
     doc.text("📋 Reporte de dispositivos", 14, 15);
-  
+
     const headers = [["ID", "Nombre", "Oxígeno", "Obstáculos", "Temperatura"]];
     const rows = dispositivos.map((item) => [
       item.id,
@@ -70,16 +71,16 @@ const ReporteFirebase = () => {
       item.obstaculos || "-",
       item.temperatura || "-",
     ]);
-  
+
     autoTable(doc, {
       head: headers,
       body: rows,
       startY: 20,
       theme: "grid",
     });
-  
+
     doc.save("reporte_dispositivos.pdf");
-  };  
+  };
 
   return (
     <div style={styles.container}>
