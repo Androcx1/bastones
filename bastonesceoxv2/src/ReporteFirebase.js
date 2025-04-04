@@ -1,8 +1,9 @@
-// ReporteFirebase.js
 import React, { useEffect, useState } from "react";
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 // 🔐 Configuración de Firebase Realtime Database
 const firebaseConfig = {
@@ -16,8 +17,9 @@ const firebaseConfig = {
 };
 
 // ✅ Inicializar Firebase solo si no existe ya una app con ese nombre
-const app = getApps().find(a => a.name === "databaseApp") 
-  || initializeApp(firebaseConfig, "databaseApp");
+const app =
+  getApps().find((a) => a.name === "databaseApp") ||
+  initializeApp(firebaseConfig, "databaseApp");
 
 // ✅ Obtener la base de datos
 const db = getDatabase(app);
@@ -35,11 +37,13 @@ const ReporteFirebase = () => {
         if (snapshot.exists()) {
           const data = snapshot.val();
 
-          // Transformar objetos en array de dispositivos
-          const lista = Object.entries(data).map(([id, valores]) => ({
-            id,
-            ...valores
-          }));
+          // ✅ Filtrar solo objetos válidos
+          const lista = Object.entries(data)
+            .filter(([_, val]) => typeof val === "object" && val.nombre)
+            .map(([id, valores]) => ({
+              id,
+              ...valores,
+            }));
 
           setDispositivos(lista);
         } else {
@@ -53,6 +57,30 @@ const ReporteFirebase = () => {
     fetchDispositivos();
   }, []);
 
+  // ✅ Exportar a PDF
+  const exportarPDF = () => {
+    const doc = new jsPDF();
+    doc.text("📋 Reporte de dispositivos", 14, 15);
+
+    const headers = [["ID", "Nombre", "Oxígeno", "Obstáculos", "Temperatura"]];
+    const rows = dispositivos.map((item) => [
+      item.id,
+      item.nombre || "-",
+      item.oxigeno || "-",
+      item.obstaculos || "-",
+      item.temperatura || "-",
+    ]);
+
+    doc.autoTable({
+      head: headers,
+      body: rows,
+      startY: 20,
+      theme: "grid",
+    });
+
+    doc.save("reporte_dispositivos.pdf");
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.logoContainer} onClick={() => navigate("/home")}>
@@ -60,6 +88,7 @@ const ReporteFirebase = () => {
       </div>
 
       <h2 style={styles.title}>📋 Dispositivos registrados</h2>
+
       <table style={styles.table}>
         <thead style={styles.tableHead}>
           <tr>
@@ -82,6 +111,10 @@ const ReporteFirebase = () => {
           ))}
         </tbody>
       </table>
+
+      <button onClick={exportarPDF} style={styles.button}>
+        📄 Exportar a PDF
+      </button>
     </div>
   );
 };
@@ -90,7 +123,8 @@ const styles = {
   container: {
     minHeight: "100vh",
     backgroundColor: "#000",
-    backgroundImage: "radial-gradient(circle, rgba(0,0,255,0.3) 10%, transparent 70%)",
+    backgroundImage:
+      "radial-gradient(circle, rgba(0,0,255,0.3) 10%, transparent 70%)",
     backgroundSize: "cover",
     backgroundRepeat: "no-repeat",
     color: "#fff",
@@ -123,6 +157,19 @@ const styles = {
   tableHead: {
     backgroundColor: "#007bff",
     color: "#fff",
+  },
+  button: {
+    marginTop: "30px",
+    padding: "10px 20px",
+    fontSize: "16px",
+    borderRadius: "8px",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    cursor: "pointer",
+    display: "block",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
 };
 
