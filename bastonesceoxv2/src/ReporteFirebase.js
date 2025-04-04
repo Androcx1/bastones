@@ -61,7 +61,7 @@ const ReporteFirebase = () => {
   const exportarPDF = () => {
     const doc = new jsPDF();
     doc.text("📋 Reporte de dispositivos", 14, 15);
-
+  
     const headers = [["ID", "Nombre", "Oxígeno", "Obstáculos", "Temperatura"]];
     const rows = dispositivos.map((item) => [
       item.id,
@@ -70,16 +70,16 @@ const ReporteFirebase = () => {
       item.obstaculos || "-",
       item.temperatura || "-",
     ]);
-
-    doc.autoTable({
+  
+    autoTable(doc, {
       head: headers,
       body: rows,
       startY: 20,
       theme: "grid",
     });
-
+  
     doc.save("reporte_dispositivos.pdf");
-  };
+  };  
 
   return (
     <div style={styles.container}>
