@@ -3,6 +3,18 @@ import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 
+// 📊 Importar componentes de Recharts
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
 // 🔐 Configuración de Firebase Realtime Database
 const firebaseConfig = {
   apiKey: "AIzaSyBASfSd6hALKmW4bGYetoAK0aJnkg-obrs",
@@ -11,7 +23,7 @@ const firebaseConfig = {
   projectId: "proyectoceox",
   storageBucket: "proyectoceox.appspot.com",
   messagingSenderId: "497016388925",
-  appId: "1:497016388925:web:65d7d2c06400ad699c9954"
+  appId: "1:497016388925:web:65d7d2c06400ad699c9954",
 };
 
 // ✅ Inicializar Firebase solo si no existe ya una app con ese nombre
@@ -29,13 +41,12 @@ const ReporteFirebase = () => {
   useEffect(() => {
     const fetchDispositivos = async () => {
       try {
-        const dispositivosRef = ref(db, "/"); // Raíz de la base
+        const dispositivosRef = ref(db, "/");
         const snapshot = await get(dispositivosRef);
 
         if (snapshot.exists()) {
           const data = snapshot.val();
 
-          // ✅ Filtrar solo objetos válidos
           const lista = Object.entries(data)
             .filter(([_, val]) => typeof val === "object" && val.nombre)
             .map(([id, valores]) => ({
@@ -55,7 +66,7 @@ const ReporteFirebase = () => {
     fetchDispositivos();
   }, []);
 
-  // ✅ Exportar a PDF (con importación dinámica para evitar errores en Vercel)
+  // ✅ Exportar a PDF
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
     const autoTable = (await import("jspdf-autotable")).default;
@@ -88,7 +99,7 @@ const ReporteFirebase = () => {
         <img src="/images/logob.jpg" alt="Logo" style={styles.logo} />
       </div>
 
-      <h2 style={styles.title}>📋 Dispositivos registrados</h2>
+      <h2 style={styles.title}>Dispositivos registrados</h2>
 
       <table style={styles.table}>
         <thead style={styles.tableHead}>
@@ -116,6 +127,25 @@ const ReporteFirebase = () => {
       <button onClick={exportarPDF} style={styles.button}>
         📄 Exportar a PDF
       </button>
+
+      <h3 style={styles.chartTitle}>
+        Oxígeno y Temperatura 
+      </h3>
+
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart
+          data={dispositivos}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="id" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="oxigeno" fill="#82ca9d" name="Oxígeno" />
+          <Bar dataKey="temperatura" fill="#8884d8" name="Temperatura" />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 };
@@ -171,6 +201,12 @@ const styles = {
     display: "block",
     marginLeft: "auto",
     marginRight: "auto",
+  },
+  chartTitle: {
+    fontSize: "22px",
+    fontWeight: "bold",
+    marginTop: "40px",
+    textAlign: "center",
   },
 };
 
