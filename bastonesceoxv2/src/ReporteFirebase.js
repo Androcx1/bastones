@@ -3,10 +3,10 @@ import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 
-// 📊 Importar componentes de Recharts
+// 📊 Importar componentes de Recharts (lineal)
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -15,23 +15,22 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// 🔐 Configuración de Firebase Realtime Database
+// 🔐 Configuración nueva de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBASfSd6hALKmW4bGYetoAK0aJnkg-obrs",
-  authDomain: "proyectoceox.firebaseapp.com",
-  databaseURL: "https://proyectoceox-default-rtdb.firebaseio.com",
-  projectId: "proyectoceox",
-  storageBucket: "proyectoceox.appspot.com",
-  messagingSenderId: "497016388925",
-  appId: "1:497016388925:web:65d7d2c06400ad699c9954",
+  apiKey: "AIzaSyCX6UeqXw8rAyXUnMI_piNuaSSVMj9EGTU",
+  authDomain: "bastonesceoxs.firebaseapp.com",
+  databaseURL: "https://bastonesceoxs-default-rtdb.firebaseio.com",
+  projectId: "bastonesceoxs",
+  storageBucket: "bastonesceoxs.firebasestorage.app",
+  messagingSenderId: "938831071340",
+  appId: "1:938831071340:web:b74f499dd3586ca3e47049",
+  measurementId: "G-X2FCSFYKZ0",
 };
 
-// ✅ Inicializar Firebase solo si no existe ya una app con ese nombre
+// ✅ Inicializar Firebase
 const app =
   getApps().find((a) => a.name === "databaseApp") ||
   initializeApp(firebaseConfig, "databaseApp");
-
-// ✅ Obtener la base de datos
 const db = getDatabase(app);
 
 const ReporteFirebase = () => {
@@ -39,34 +38,31 @@ const ReporteFirebase = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDispositivos = async () => {
+    const fetchDatosActuales = async () => {
       try {
-        const dispositivosRef = ref(db, "/");
-        const snapshot = await get(dispositivosRef);
+        const refDatos = ref(db, "/datos_actuales");
+        const snapshot = await get(refDatos);
 
         if (snapshot.exists()) {
           const data = snapshot.val();
 
-          const lista = Object.entries(data)
-            .filter(([_, val]) => typeof val === "object" && val.nombre)
-            .map(([id, valores]) => ({
-              id,
-              ...valores,
-            }));
+          const lista = Object.entries(data).map(([id, valores]) => ({
+            id,
+            ...valores,
+          }));
 
           setDispositivos(lista);
         } else {
           console.warn("No hay datos disponibles.");
         }
       } catch (error) {
-        console.error("Error al obtener los datos:", error);
+        console.error("Error al obtener datos_actuales:", error);
       }
     };
 
-    fetchDispositivos();
+    fetchDatosActuales();
   }, []);
 
-  // ✅ Exportar a PDF
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
     const autoTable = (await import("jspdf-autotable")).default;
@@ -74,13 +70,16 @@ const ReporteFirebase = () => {
     const doc = new jsPDF();
     doc.text("📋 Reporte de dispositivos", 14, 15);
 
-    const headers = [["ID", "Nombre", "Oxígeno", "Obstáculos", "Temperatura"]];
+    const headers = [
+      ["ID", "Oxígeno", "Temperatura", "Pasos", "Obstáculos", "Batería"],
+    ];
     const rows = dispositivos.map((item) => [
       item.id,
-      item.nombre || "-",
       item.oxigeno || "-",
-      item.obstaculos || "-",
       item.temperatura || "-",
+      item.pasos || "-",
+      item.obstaculo_detectado || "-",
+      item.bateria || "-",
     ]);
 
     autoTable(doc, {
@@ -99,26 +98,28 @@ const ReporteFirebase = () => {
         <img src="/images/logob.jpg" alt="Logo" style={styles.logo} />
       </div>
 
-      <h2 style={styles.title}>Dispositivos registrados</h2>
+      <h2 style={styles.title}>📋 Datos actuales de los dispositivos</h2>
 
       <table style={styles.table}>
         <thead style={styles.tableHead}>
           <tr>
             <th>ID</th>
-            <th>Nombre</th>
             <th>Oxígeno</th>
-            <th>Obstáculos</th>
             <th>Temperatura</th>
+            <th>Pasos</th>
+            <th>Obstáculos</th>
+            <th>Batería</th>
           </tr>
         </thead>
         <tbody>
           {dispositivos.map((item) => (
             <tr key={item.id}>
               <td>{item.id}</td>
-              <td>{item.nombre || "-"}</td>
               <td>{item.oxigeno || "-"}</td>
-              <td>{item.obstaculos || "-"}</td>
               <td>{item.temperatura || "-"}</td>
+              <td>{item.pasos || "-"}</td>
+              <td>{item.obstaculo_detectado || "-"}</td>
+              <td>{item.bateria || "-"}</td>
             </tr>
           ))}
         </tbody>
@@ -128,12 +129,10 @@ const ReporteFirebase = () => {
         📄 Exportar a PDF
       </button>
 
-      <h3 style={styles.chartTitle}>
-        Oxígeno y Temperatura 
-      </h3>
+      <h3 style={styles.chartTitle}>📈 Oxígeno y Temperatura por dispositivo</h3>
 
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart
+        <LineChart
           data={dispositivos}
           margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
         >
@@ -142,9 +141,19 @@ const ReporteFirebase = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="oxigeno" fill="#82ca9d" name="Oxígeno" />
-          <Bar dataKey="temperatura" fill="#8884d8" name="Temperatura" />
-        </BarChart>
+          <Line
+            type="monotone"
+            dataKey="oxigeno"
+            stroke="#82ca9d"
+            name="Oxígeno"
+          />
+          <Line
+            type="monotone"
+            dataKey="temperatura"
+            stroke="#8884d8"
+            name="Temperatura"
+          />
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );
