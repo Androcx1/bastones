@@ -3,10 +3,10 @@ import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 
-// 📊 Importar componentes de Recharts (lineal)
+// 📊 Gráfica de barras
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// 🔐 Configuración nueva de Firebase
+// 🔐 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCX6UeqXw8rAyXUnMI_piNuaSSVMj9EGTU",
   authDomain: "bastonesceoxs.firebaseapp.com",
@@ -27,7 +27,6 @@ const firebaseConfig = {
   measurementId: "G-X2FCSFYKZ0",
 };
 
-// ✅ Inicializar Firebase
 const app =
   getApps().find((a) => a.name === "databaseApp") ||
   initializeApp(firebaseConfig, "databaseApp");
@@ -98,7 +97,7 @@ const ReporteFirebase = () => {
         <img src="/images/logob.jpg" alt="Logo" style={styles.logo} />
       </div>
 
-      <h2 style={styles.title}>📋 Datos actuales de los dispositivos</h2>
+      <h2 style={styles.title}>Datos actuales</h2>
 
       <table style={styles.table}>
         <thead style={styles.tableHead}>
@@ -129,10 +128,12 @@ const ReporteFirebase = () => {
         📄 Exportar a PDF
       </button>
 
-      <h3 style={styles.chartTitle}>📈 Oxígeno y Temperatura por dispositivo</h3>
+      <h3 style={styles.chartTitle}>
+        📊 Comparación: Oxígeno, Temperatura, Pasos, Batería y Obstáculos
+      </h3>
 
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart
+      <ResponsiveContainer width="100%" height={350}>
+        <BarChart
           data={dispositivos}
           margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
         >
@@ -141,19 +142,12 @@ const ReporteFirebase = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line
-            type="monotone"
-            dataKey="oxigeno"
-            stroke="#82ca9d"
-            name="Oxígeno"
-          />
-          <Line
-            type="monotone"
-            dataKey="temperatura"
-            stroke="#8884d8"
-            name="Temperatura"
-          />
-        </LineChart>
+          <Bar dataKey="oxigeno" fill="#00e676" name="Oxígeno" />
+          <Bar dataKey="temperatura" fill="#1e88e5" name="Temperatura" />
+          <Bar dataKey="pasos" fill="#ffc658" name="Pasos" />
+          <Bar dataKey="bateria" fill="#f54242" name="Batería" />
+          <Bar dataKey="obstaculo_detectado" fill="#00bcd4" name="Obstáculos" />
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );
